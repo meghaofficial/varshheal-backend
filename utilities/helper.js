@@ -3,5 +3,5 @@ function generateOTP() {
 }
 
 module.exports = {
-      generateOTP
-}
+  generateOTP,
+};
