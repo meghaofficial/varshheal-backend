@@ -55,7 +55,7 @@ const signupWithGoogle = async (req, res) => {
     return res.json({ user: tokenPayload });
   } catch (err) {
     console.error(err);
-    return res.status(401).json({ message: "Invalid Google token" });
+    return res.status(401).json({ message: "Invalid Google token >>>>>>>>>>" });
   }
 }
 
