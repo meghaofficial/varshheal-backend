@@ -1,13 +1,13 @@
 const nodemailer = require("nodemailer");
-const { Verification_Email_Template } = require("./emailTemplate");
+const { Verification_Email_Template, Welcome_Email_Template } = require("./emailTemplate");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false, // true for port 465, false for other ports
   auth: {
-    user: "varsha23alg@gmail.com",
-    pass: "vhql twjm edqn ostb",
+    user: "varshheal23@gmail.com",
+    pass: "ybws gfpx hazb wqyu",
   },
 });
 
@@ -21,7 +21,7 @@ const sendEmail = async (email, { template, subject, data }) => {
     }
 
     const response = await transporter.sendMail({
-      from: '"Varshheal" <varsha23alg@gmail.com>',
+      from: '"Varshheal" <varshheal23@gmail.com>',
       to: email,
       subject,
       text: "Please check the details",
@@ -62,5 +62,6 @@ const sendWelcomeEmail = (email, name) => {
 };
 
 module.exports = {
-      sendVerificationCode
+      sendVerificationCode,
+      sendWelcomeEmail
 }
