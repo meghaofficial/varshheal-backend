@@ -1,9 +1,9 @@
 const express = require('express');
-const { requireAuth } = require('../middleware/authMiddleware');
+const { requireAuth, isAuthenticated } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get("/me", requireAuth, (req, res) => {
+router.get("/me", isAuthenticated, (req, res) => {
       res.json({ user: req.user });
 });
 

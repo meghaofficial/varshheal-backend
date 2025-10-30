@@ -21,21 +21,57 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+// const isAuthenticated = (req, res, next) => {
+//   const auth = req.headers["authorization"];
+//   if (!auth) {
+//     return res.status(403).json({
+//       message: "Unauthorized, JWT token required",
+//     });
+//   }
+//   try {
+//     const decode = jwt.verify(auth, process.env.JWT_SECRET);
+//     req.user = decode;
+//     next();
+//   } catch (error) {
+//     return res.status(403).json({
+//       message: "Unauthorized, JWT token wrong or expired",
+//       error,
+//     });
+//   }
+// };
+
 const isAuthenticated = (req, res, next) => {
-  const auth = req.headers["authorization"];
-  if (!auth) {
-    return res.status(403).json({
-      message: "Unauthorized, JWT token required",
-    });
-  }
   try {
-    const decode = jwt.verify(auth, process.env.JWT_SECRET);
-    req.user = decode;
+    // Try to get token from cookie or header
+    let token = req.cookies?.token;
+    const authHeader = req.headers.authorization;
+
+    // If token not in cookie, check Authorization header
+    if (!token && authHeader) {
+      if (authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1]; 
+      } else {
+        token = authHeader; 
+      }
+    }
+
+    if (!token) {
+      return res.status(403).json({
+        message: "Unauthorized, JWT token required",
+      });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Attach user info to request
+    req.user = decoded;
+
     next();
   } catch (error) {
+    console.error("Auth error:", error.message);
     return res.status(403).json({
-      message: "Unauthorized, JWT token wrong or expired",
-      error,
+      message: "Unauthorized, JWT token invalid or expired",
     });
   }
 };
