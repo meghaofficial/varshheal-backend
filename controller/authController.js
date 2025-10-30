@@ -2,7 +2,10 @@ const User = require("../models/User");
 const Otp = require("../models/Otp");
 const jwt = require("jsonwebtoken");
 const googleAuth = require("google-auth-library");
-const { sendVerificationCode, sendWelcomeEmail } = require("../middleware/email");
+const {
+  sendVerificationCode,
+  sendWelcomeEmail,
+} = require("../middleware/email");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
@@ -37,7 +40,8 @@ const signupWithGoogle = async (req, res) => {
     if (existingManualUser) {
       return res.status(400).json({
         success: false,
-        message: "User already exists. Please sign in using your email and password.",
+        message:
+          "User already exists. Please sign in using your email and password.",
       });
     }
 
@@ -76,7 +80,9 @@ const signupWithGoogle = async (req, res) => {
     return res.json({ user: tokenPayload });
   } catch (err) {
     console.error(err);
-    return res.status(401).json({ message: "Something went wrong please try again" });
+    return res
+      .status(401)
+      .json({ message: "Something went wrong please try again" });
   }
 };
 
@@ -150,12 +156,10 @@ const verifyEmail = async (req, res) => {
 
   const record = await Otp.findOne({ email });
   if (!record) {
-    return res
-      .status(401)
-      .json({
-        message: "OTP expired or not sent. Please resend.",
-        success: false,
-      });
+    return res.status(401).json({
+      message: "OTP expired or not sent. Please resend.",
+      success: false,
+    });
   }
 
   if (+otp !== +record.otp) {
@@ -259,6 +263,74 @@ const getDetails = async (req, res) => {
   }
 };
 
+// THIS API IS CURRENTLY NOT IN USE
+const updateDetails = async (req, res) => {
+  try {
+    const userId = req.user._id || req.body.googleId;
+    const { name, gender } = req.body;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update provided fields only
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          ...(name && { name }),
+          ...(gender && { gender }),
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Details updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user details",
+      error: error.message,
+    });
+  }
+};
+
+const deleteAccount = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Account ID is required" });
+    }
+
+    const user = await User.findOneAndDelete({ _id: id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully deleted the account",
+    });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete account",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   signupWithGoogle,
   logout,
@@ -266,5 +338,7 @@ module.exports = {
   verifyEmail,
   registerWebSocketClient,
   signin,
-  getDetails
+  getDetails,
+  updateDetails,
+  deleteAccount
 };

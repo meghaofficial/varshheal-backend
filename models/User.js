@@ -1,32 +1,5 @@
-// const mongoose = require("mongoose");
-
-// const userSchema = new mongoose.Schema(
-//   {
-//     googleId: {
-//       type: String,
-//       index: true,
-//       unique: true,
-//       sparse: true,
-//     },
-//     email: {
-//       type: String,
-//       index: true,
-//     },
-//     name: String,
-//     avatar: String,
-//     createdAt: {
-//       type: Date,
-//       default: Date.now,
-//     },
-//   },
-//   { timestamps: true }
-// );
-
-// const User = mongoose.model("user", userSchema);
-
-// module.exports = User
-
 const mongoose = require("mongoose");
+const Address = require("./Address");
 
 const userSchema = new mongoose.Schema(
   {
@@ -45,6 +18,11 @@ const userSchema = new mongoose.Schema(
       index: true,
       unique: true,
       required: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+      default: "female"
     },
     password: {
       type: String, // only required for normal signup
@@ -65,6 +43,21 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Cascade delete when user is deleted
+userSchema.pre("findOneAndDelete", async function (next) {
+  const userId = this.getQuery()["_id"];
+
+  // Delete all related documents
+  await Promise.all([
+    Address.deleteMany({ userId }),
+    // Order.deleteMany({ userId }),
+    // Cart.deleteMany({ userId }),
+    // Wishlist.deleteMany({ userId }),
+  ]);
+
+  next();
+});
 
 const User = mongoose.model("user", userSchema);
 module.exports = User;
