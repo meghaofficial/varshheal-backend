@@ -21,25 +21,6 @@ const requireAuth = (req, res, next) => {
   }
 };
 
-// const isAuthenticated = (req, res, next) => {
-//   const auth = req.headers["authorization"];
-//   if (!auth) {
-//     return res.status(403).json({
-//       message: "Unauthorized, JWT token required",
-//     });
-//   }
-//   try {
-//     const decode = jwt.verify(auth, process.env.JWT_SECRET);
-//     req.user = decode;
-//     next();
-//   } catch (error) {
-//     return res.status(403).json({
-//       message: "Unauthorized, JWT token wrong or expired",
-//       error,
-//     });
-//   }
-// };
-
 const isAuthenticated = (req, res, next) => {
   try {
     // Try to get token from cookie or header
@@ -75,6 +56,7 @@ const isAuthenticated = (req, res, next) => {
     });
   }
 };
+
 
 const isAuthorized = async (req, res, next) => {
   try {

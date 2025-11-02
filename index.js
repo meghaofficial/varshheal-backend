@@ -10,6 +10,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const bodyParser = require("body-parser");
 const addressRoutes = require('./routes/address');
+const categoryRoutes = require("./routes/category");
 
 dotenv.config();
 const app = express();
@@ -29,7 +30,7 @@ app.use(cors({
 
 app.use(express.json());
 app.get("/", (req, res) => res.send("API is Running"));
-app.use("/api/auth", [authRoutes, addressRoutes]);
+app.use("/api/auth", [authRoutes, addressRoutes, categoryRoutes]);
 app.use("/api", protectedRoutes);
 
 const server = http.createServer(app);

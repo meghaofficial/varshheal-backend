@@ -48,12 +48,13 @@ const signupWithGoogle = async (req, res) => {
     // Upsert user in DB
     let user = await User.findOne({ googleId });
     if (!user) {
-      user = new User({ googleId, email, name, avatar: picture });
+      user = new User({ googleId, email, name, avatar: picture, role: 1000 });
       await user.save();
     } else {
       user.email = email;
       user.name = name;
       user.avatar = picture;
+      if (!user.role) user.role = 1000;
       await user.save();
     }
 
@@ -63,6 +64,7 @@ const signupWithGoogle = async (req, res) => {
       email: user.email,
       name: user.name,
       avatar: user.avatar,
+      role: user.role
     };
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN || "7d",
