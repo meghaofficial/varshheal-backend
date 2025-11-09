@@ -15,7 +15,7 @@ const paginate = (model, baseQuery = {}) => async (req, res, next) => {
     }
 
     const total = await model.countDocuments(query);
-    const data = await model.find(query).skip(skip).limit(limit).sort({ createdAt: -1 });
+    const data = await model.find(query).skip(skip).limit(limit).sort({ createdAt: -1, _id: -1 });
 
     res.paginationResult = {
       success: true,
