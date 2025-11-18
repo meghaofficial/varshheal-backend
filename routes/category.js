@@ -8,10 +8,12 @@ const router = require('express').Router();
 
 router.post("/create-category", isAuthenticated, isAuthorized, uploadImage.single("thumbnail"),  createCategory);
 router.post("/upload-categories", uploadExcel.single("file"), createCategory);
+
+
 router.patch("/update-category/:id", isAuthenticated, isAuthorized, uploadImage.single("thumbnail"), updateCategory);
+
+
 router.delete("/delete-category/:id", isAuthenticated, isAuthorized, deleteCategory);
-// router.get("/published-categories", showPublishedCategory);
-// router.get("/drafted-categories", showDraftedCategory);
 router.get("/drafted-categories", paginate(Category, { status: "draft" }), (req, res) => {
   res.status(200).json(res.paginationResult);
 });

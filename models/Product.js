@@ -5,7 +5,6 @@ const productSchema = new mongoose.Schema(
     sku: {
       type: String,
       required: true,
-      // unique: true,
       trim: true,
     },
     name: {
@@ -18,22 +17,15 @@ const productSchema = new mongoose.Schema(
       categoryId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "category",
-        // required: true,
       },
       categoryName: {
         type: String,
-        // required: true,
         trim: true,
       },
     },
 
     images: {
-      type: [String], // Array of Cloudinary URLs
-      // required: true,
-      // validate: {
-      //   validator: (arr) => arr.length >= 1 && arr.length <= 4,
-      //   message: "You must upload between 1 and 4 images.",
-      // },
+      type: [String],
     },
 
     price: {
@@ -157,6 +149,13 @@ const productSchema = new mongoose.Schema(
     timestamps: true, // adds createdAt and updatedAt
   }
 );
+
+// productSchema.virtual("reviews", {
+//   ref: "review",
+//   localField: "_id",
+//   foreignField: "productId"
+// });
+// await Product.findById(id).populate("reviews");
 
 const Product = mongoose.model("product", productSchema);
 module.exports = Product;

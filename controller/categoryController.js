@@ -87,68 +87,32 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, products, status, newId } = req.body;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Category ID (Mongo _id) is required in params.",
-      });
-    }
-
-    // Find existing category
     const category = await Category.findById(id);
     if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found.",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found." });
     }
 
-    // Check duplicate category `id` or `name` if changed
-    if (newId && newId !== category.id) {
-      const existingId = await Category.findOne({ id: newId });
-      if (existingId) {
-        return res.status(400).json({
-          success: false,
-          message: "Category ID already exists.",
-        });
-      }
-      category.id = newId;
-    }
-
-    if (name && name !== category.name) {
-      const existingName = await Category.findOne({ name });
-      if (existingName) {
-        return res.status(400).json({
-          success: false,
-          message: "Category name already exists.",
-        });
-      }
-      category.name = name;
-    }
-
-    // Handle Cloudinary image update if a new file is uploaded
     if (req.file) {
-      // Delete previous Cloudinary image (optional)
+      // deleting old
       if (category.thumbnail && category.thumbnail.includes("cloudinary")) {
         const publicId = category.thumbnail.split("/").pop().split(".")[0];
         try {
-          await cloudinary.uploader.destroy(publicId);
+          await cloudinary.uploader.destroy(`categories/${publicId}`);
         } catch (err) {
           console.warn("Failed to delete old image:", err.message);
         }
       }
-
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "categories",
-      });
-      category.thumbnail = result.secure_url;
+      // updating new
+      category.thumbnail = req.file.path;
     }
 
     // Update other fields
-    if (products !== undefined) category.products = products;
-    if (status) category.status = status;
+    if (req.body.name) category.name = req.body.name;
+    if (req.body.newId) category.id = req.body.newId;
+    if (req.body.status) category.status = req.body.status;
 
     await category.save();
 
@@ -158,12 +122,8 @@ const updateCategory = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.error("Error updating category:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update category.",
-      error: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Update failed." });
   }
 };
 
@@ -179,10 +139,15 @@ const deleteCategory = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     }
 
-    // Remove thumbnail from server if it exists
-    // if (category.thumbnail && fs.existsSync(category.thumbnail)) {
-    //   fs.unlinkSync(category.thumbnail);
-    // }
+    if (category.thumbnail && category.thumbnail.includes("cloudinary")) {
+      const publicId = category.thumbnail.split("/").pop().split(".")[0];
+      console.log("publicId", publicId);
+      try {
+        await cloudinary.uploader.destroy(`categories/${publicId}`);
+      } catch (err) {
+        console.warn("Failed to delete old image:", err.message);
+      }
+    }
 
     // Delete the category
     await Category.findByIdAndDelete(id);

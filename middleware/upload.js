@@ -8,7 +8,21 @@ const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "categories",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "avif"],
+  },
+});
+const productImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "products",
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "avif"],
+  },
+});
+const sizeChartStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "size_charts",
+    allowed_formats: ["jpg", "jpeg", "png", "webp", "avif"],
   },
 });
 
@@ -20,6 +34,8 @@ const excelStorage = multer.diskStorage({
 
 // Two separate uploaders
 const uploadImage = multer({ storage: cloudinaryStorage });
+const uploadProductImages = multer({ storage: productImageStorage });
+const uploadSizeChart = multer({ storage: sizeChartStorage });
 const uploadExcel = multer({
   storage: excelStorage,
   fileFilter: (req, file, cb) => {
@@ -31,4 +47,4 @@ const uploadExcel = multer({
   },
 });
 
-module.exports = { uploadImage, uploadExcel };
+module.exports = { uploadImage, uploadExcel, uploadProductImages, uploadSizeChart };
