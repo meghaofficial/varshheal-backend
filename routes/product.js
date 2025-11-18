@@ -19,7 +19,7 @@ router.post(
   "/create-product",
   isAuthenticated,
   isAuthorized,
-  uploadImage.fields([
+  uploadProductImages.fields([
     { name: "images", maxCount: 4 },
     { name: "size_chart", maxCount: 1 },
   ]),
@@ -94,7 +94,7 @@ router.patch(
   uploadProductImages.fields([
     { name: "images", maxCount: 4 },
   ]),
-  uploadSizeChart.single("size_chart"),
+  // uploadSizeChart.single("size_chart"),
   updateProduct
 );
 router.delete(
