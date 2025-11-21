@@ -24,8 +24,14 @@ const productSchema = new mongoose.Schema(
       },
     },
 
+    // images: {
+    //   type: [String],
+    // },
     images: {
-      type: [String],
+      img1: String,
+      img2: String,
+      img3: String,
+      img4: String
     },
 
     price: {

@@ -3,12 +3,18 @@ const {
   updateProduct,
   deleteProduct,
   getProductByID,
+  deleteMultipleProducts,
 } = require("../controller/productController");
 const {
   isAuthenticated,
   isAuthorized,
 } = require("../middleware/authMiddleware");
-const { uploadImage, uploadExcel, uploadProductImages, uploadSizeChart } = require("../middleware/upload");
+const {
+  uploadImage,
+  uploadExcel,
+  uploadProductImages,
+  uploadSizeChart,
+} = require("../middleware/upload");
 const Product = require("../models/Product");
 const xlsx = require("xlsx");
 const paginate = require("../utilities/paginate");
@@ -20,7 +26,10 @@ router.post(
   isAuthenticated,
   isAuthorized,
   uploadProductImages.fields([
-    { name: "images", maxCount: 4 },
+    { name: "img1", maxCount: 1 },
+    { name: "img2", maxCount: 1 },
+    { name: "img3", maxCount: 1 },
+    { name: "img4", maxCount: 1 },
     { name: "size_chart", maxCount: 1 },
   ]),
   createProduct
@@ -44,8 +53,6 @@ router.post(
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet);
 
-      console.log("Parsed Excel data:", data);
-
       if (!data.length) {
         return res.status(200).json({
           success: true,
@@ -55,8 +62,31 @@ router.post(
         });
       }
 
+      const dataR = data.map((item) => ({
+        ...item,
+        color:
+          typeof item.color === "string"
+            ? item.color.split(",").map((c) => c.trim())
+            : item.color,
+
+        size:
+          typeof item.size === "string"
+            ? item.size.split(",").map((s) => s.trim())
+            : item.size,
+
+        tags:
+          typeof item.tags === "string"
+            ? item.tags.split(",").map((c) => c.trim())
+            : item.tags,
+
+        description:
+          typeof item.description === "string"
+            ? item.description.split(",").map((c) => c.trim())
+            : item.description,
+      }));
+
       // Insert into DB (example)
-      const insertedProducts = await Product.insertMany(data);
+      const insertedProducts = await Product.insertMany(dataR);
       return res.status(200).json({
         success: true,
         message: `${insertedProducts.length} product(s) added successfully`,
@@ -92,9 +122,12 @@ router.patch(
   isAuthenticated,
   isAuthorized,
   uploadProductImages.fields([
-    { name: "images", maxCount: 4 },
+    { name: "img1", maxCount: 1 },
+    { name: "img2", maxCount: 1 },
+    { name: "img3", maxCount: 1 },
+    { name: "img4", maxCount: 1 },
+    { name: "size_chart", maxCount: 1 },
   ]),
-  // uploadSizeChart.single("size_chart"),
   updateProduct
 );
 router.delete(
@@ -102,6 +135,12 @@ router.delete(
   isAuthenticated,
   isAuthorized,
   deleteProduct
+);
+router.post(
+  "/delete-products",
+  isAuthenticated,
+  isAuthorized,
+  deleteMultipleProducts
 );
 
 module.exports = router;

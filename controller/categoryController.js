@@ -1,6 +1,7 @@
 const XLSX = require("xlsx");
 const Category = require("../models/Category");
 const cloudinary = require("cloudinary").v2;
+const Product = require("../models/Product");
 
 const createCategory = async (req, res) => {
   try {
@@ -141,12 +142,56 @@ const deleteCategory = async (req, res) => {
 
     if (category.thumbnail && category.thumbnail.includes("cloudinary")) {
       const publicId = category.thumbnail.split("/").pop().split(".")[0];
-      console.log("publicId", publicId);
       try {
         await cloudinary.uploader.destroy(`categories/${publicId}`);
       } catch (err) {
         console.warn("Failed to delete old image:", err.message);
       }
+    }
+
+    // Find all products belonging to this category
+    if (category?.products > 0) {
+      const products = await Product.find({
+        "categoryDetail.categoryId": category._id,
+      });
+
+      console.log("productsproductsproducts", products);
+
+      for (const product of products) {
+        // Delete image fields dynamically
+        const imageKeys = ["img1", "img2", "img3", "img4"];
+
+        for (const key of imageKeys) {
+          if (
+            product.images?.[key] &&
+            product.images[key].includes("cloudinary")
+          ) {
+            const publicId = product.images[key].split("/").pop().split(".")[0];
+            try {
+              await cloudinary.uploader.destroy(`products/${publicId}`);
+            } catch (err) {
+              console.warn(
+                `Failed to delete product image ${key}:`,
+                err.message
+              );
+            }
+          }
+        }
+
+        // Delete size_chart
+        if (product.size_chart && product.size_chart.includes("cloudinary")) {
+          const publicId = product.size_chart.split("/").pop().split(".")[0];
+          try {
+            await cloudinary.uploader.destroy(`products/${publicId}`);
+          } catch (err) {
+            console.warn("Failed to delete size chart:", err.message);
+          }
+        }
+      }
+
+      // Delete products from DB
+      await Product.deleteMany({ "categoryDetail.categoryId": category._id });
+
     }
 
     // Delete the category
