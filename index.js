@@ -1,15 +1,15 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-require('./db');
-const authRoutes = require('./routes/auth');
-const protectedRoutes = require('./routes/protected');
+const express = require("express");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+require("./db");
+const authRoutes = require("./routes/auth");
+const protectedRoutes = require("./routes/protected");
 const { registerWebSocketClient } = require("./controller/authController");
-const http = require('http');
-const WebSocket = require('ws');
+const http = require("http");
+const WebSocket = require("ws");
 const bodyParser = require("body-parser");
-const addressRoutes = require('./routes/address');
+const addressRoutes = require("./routes/address");
 const categoryRoutes = require("./routes/category");
 const productRoutes = require("./routes/product");
 
@@ -20,43 +20,21 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-const allowedOrigins = [
-  "http://localhost:5173",
-  process.env.FRONTEND_URL
-];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      const ipFrontend = /^http:\/\/192\.168\.\d+\.\d+:5173$/;
-      if (ipFrontend.test(origin)) {
-        return callback(null, true);
-      }
-
-      console.log("❌ Blocked by CORS:", origin);
-      return callback(new Error("CORS blocked: " + origin), false);
-    },
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
     credentials: true,
   })
 );
 
-// app.use(cors({
-//       origin: [
-//             'http://localhost:5173',
-//             /^http:\/\/192\.168\.\d+\.\d+:5173$/, 
-//             process.env.FRONTEND_URL
-//       ],
-//       credentials: true
-// }));
-
 app.use(express.json());
 app.get("/", (req, res) => res.send("API is Running"));
-app.use("/api/auth", [authRoutes, addressRoutes, categoryRoutes, productRoutes]);
+app.use("/api/auth", [
+  authRoutes,
+  addressRoutes,
+  categoryRoutes,
+  productRoutes,
+]);
 app.use("/api", protectedRoutes);
 
 const server = http.createServer(app);
@@ -70,11 +48,11 @@ wss.on("connection", (ws) => {
   ws.on("message", (msg) => {
     try {
       const data = JSON.parse(msg.toString());
-      if (data.type === "REGISTER" && data.email){
+      if (data.type === "REGISTER" && data.email) {
         registerWebSocketClient(data.email, ws);
       }
     } catch (error) {
-      console.error('Invalid message for ws', error);
+      console.error("Invalid message for ws", error);
     }
   });
 
