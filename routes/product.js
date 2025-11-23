@@ -4,7 +4,8 @@ const {
   deleteProduct,
   getProductByID,
   deleteMultipleProducts,
-  getAllColors
+  getAllColors,
+  getSimilarProducts
 } = require("../controller/productController");
 const {
   isAuthenticated,
@@ -158,5 +159,6 @@ router.post(
   deleteMultipleProducts
 );
 router.get("/colors", getAllColors);
+router.get("/similar-products/:id", getSimilarProducts);
 
 module.exports = router;

@@ -151,7 +151,15 @@ const createProduct = async (req, res) => {
 const getProductByID = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOne({ _id: id });
+
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      query = { _id: id };
+    } else {
+      query = { sku: id };
+    }
+
+    const product = await Product.findOne(query);
 
     if (!product) {
       return res.status(404).json({
@@ -164,6 +172,20 @@ const getProductByID = async (req, res) => {
       success: true,
       details: product,
     });
+
+    // const product = await Product.findOne({ _id: id });
+
+    // if (!product) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Product Not Found",
+    //   });
+    // }
+
+    // return res.status(200).json({
+    //   success: true,
+    //   details: product,
+    // });
   } catch (error) {
     console.error("Error getting product details:", error);
     res.status(500).json({
@@ -541,11 +563,55 @@ const getAllColors = async (req, res) => {
   }
 };
 
+const getSimilarProducts = async (req, res) => {
+  try {
+    const { id } = req.params; // current product ID
+    const limit = Number(req.query.limit) || 10;
+
+    // get main product
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // Build similarity query
+    const query = {
+      _id: { $ne: id }, // exclude current product
+      status: "published",
+      $or: [
+        { "categoryDetail.categoryId": product.categoryDetail.categoryId },
+        { color: { $in: product.color } },
+        { tags: { $in: product.tags } },
+      ],
+    };
+
+    const similar = await Product.find(query)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      similar,
+    });
+  } catch (error) {
+    console.error("Similar product error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get similar products",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getProductByID,
   updateProduct,
   deleteProduct,
   deleteMultipleProducts,
-  getAllColors
+  getAllColors,
+  getSimilarProducts
 };
