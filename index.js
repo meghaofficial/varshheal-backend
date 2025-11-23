@@ -20,14 +20,39 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({
-      origin: [
-            'http://localhost:5173',
-            /^http:\/\/192\.168\.\d+\.\d+:5173$/, 
-            process.env.FRONTEND_URL
-      ],
-      credentials: true
-}));
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL
+];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      const ipFrontend = /^http:\/\/192\.168\.\d+\.\d+:5173$/;
+      if (ipFrontend.test(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ Blocked by CORS:", origin);
+      return callback(new Error("CORS blocked: " + origin), false);
+    },
+    credentials: true,
+  })
+);
+
+// app.use(cors({
+//       origin: [
+//             'http://localhost:5173',
+//             /^http:\/\/192\.168\.\d+\.\d+:5173$/, 
+//             process.env.FRONTEND_URL
+//       ],
+//       credentials: true
+// }));
 
 app.use(express.json());
 app.get("/", (req, res) => res.send("API is Running"));
