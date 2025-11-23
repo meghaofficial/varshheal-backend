@@ -5,7 +5,8 @@ const paginate = (model, baseQuery = {}) => async (req, res, next) => {
     const skip = (page - 1) * limit;
     const search = req.query.search ? req.query.search.trim() : "";
 
-    let query = { ...baseQuery };
+    // let query = { ...baseQuery };
+    let query = { ...baseQuery, ...(req.filterQuery || {}) };
 
     if (search) {
       query.$or = [

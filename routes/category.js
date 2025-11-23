@@ -1,4 +1,4 @@
-const { createCategory, updateCategory, deleteCategory, displayCategory } = require('../controller/categoryController');
+const { createCategory, updateCategory, deleteCategory } = require('../controller/categoryController');
 const { isAuthenticated, isAuthorized } = require('../middleware/authMiddleware');
 const { uploadImage, uploadExcel } = require('../middleware/upload');
 const Category = require('../models/Category');
@@ -20,6 +20,5 @@ router.get("/drafted-categories", paginate(Category, { status: "draft" }), (req,
 router.get("/published-categories", paginate(Category, { status: "published" }), (req, res) => {
   res.status(200).json(res.paginationResult);
 });
-router.get("/display-category", isAuthenticated, isAuthorized, displayCategory);
 
 module.exports = router;

@@ -155,8 +155,6 @@ const deleteCategory = async (req, res) => {
         "categoryDetail.categoryId": category._id,
       });
 
-      console.log("productsproductsproducts", products);
-
       for (const product of products) {
         // Delete image fields dynamically
         const imageKeys = ["img1", "img2", "img3", "img4"];
@@ -191,7 +189,6 @@ const deleteCategory = async (req, res) => {
 
       // Delete products from DB
       await Product.deleteMany({ "categoryDetail.categoryId": category._id });
-
     }
 
     // Delete the category
@@ -256,12 +253,9 @@ const showDraftedCategory = async (req, res) => {
   }
 };
 
-const displayCategory = async (req, res) => {};
-
 module.exports = {
   createCategory,
   updateCategory,
   deleteCategory,
-  showDraftedCategory,
-  displayCategory,
+  showDraftedCategory
 };

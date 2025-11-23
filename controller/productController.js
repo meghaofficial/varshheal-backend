@@ -2,6 +2,7 @@ const Category = require("../models/Category");
 const Product = require("../models/Product");
 const XLSX = require("xlsx");
 const cloudinary = require("cloudinary").v2;
+const mongoose = require("mongoose");
 
 const createProduct = async (req, res) => {
   try {
@@ -90,7 +91,10 @@ const createProduct = async (req, res) => {
     const newProduct = {
       sku: sku.trim(),
       name: name.trim(),
-      categoryDetail: { categoryId, categoryName },
+      categoryDetail: {
+        categoryId: new mongoose.Types.ObjectId(categoryId),
+        categoryName,
+      },
       images,
       size_chart,
       price: Number(price),
@@ -181,16 +185,87 @@ const updateProduct = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    // Update normal text fields (name, price, etc.)
-    Object.keys(req.body).forEach((field) => {
-      product[field] = req.body[field];
+    const normalFields = [
+      "sku",
+      "name",
+      "price",
+      "discount",
+      "stock",
+      "specified_by",
+      "material",
+      "target_audience",
+      "fit_type",
+      "pattern",
+      "occasion",
+      "care_instruction",
+      "closure_type",
+      "capacity",
+    ];
+
+    normalFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        product[field] = req.body[field];
+      }
     });
 
-    let categoryDetail = {};
-    if (req.body.categoryId) categoryDetail.categoryId = req.body.categoryId
-    if (req.body.categoryName) categoryDetail.categoryName = req.body.categoryName;
+    if (req.body.categoryId || req.body.categoryName) {
+      product.categoryDetail = {
+        categoryId: req.body.categoryId
+          ? new mongoose.Types.ObjectId(req.body.categoryId)
+          : product.categoryDetail.categoryId,
 
-    product.categoryDetail = categoryDetail;
+        categoryName: req.body.categoryName
+          ? req.body.categoryName
+          : product.categoryDetail.categoryName,
+      };
+    }
+
+    // array
+    const parseArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val.map((x) => x.toString().trim());
+      return val
+        .toString()
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+    };
+
+    if (req.body.size) product.size = parseArray(req.body.size);
+    if (req.body.color) product.color = parseArray(req.body.color);
+    if (req.body.tags) product.tags = parseArray(req.body.tags);
+    if (req.body.description)
+      product.description = parseArray(req.body.description);
+
+    // for dimensions
+    const parseObject = (val) => {
+      if (!val) return {};
+      if (typeof val === "object") return val;
+      const obj = {};
+      val
+        .toString()
+        .split(",")
+        .forEach((pair) => {
+          const [k, v] = pair.split(":").map((x) => x.trim());
+          if (k && v) obj[k] = v;
+        });
+      return obj;
+    };
+
+    if (req.body.dimensions) {
+      product.dimensions = parseObject(req.body.dimensions);
+    }
+
+    // Update normal text fields (name, price, etc.)
+    // Object.keys(req.body).forEach((field) => {
+    //   product[field] = req.body[field];
+    // });
+
+    // let categoryDetail = {};
+    // if (req.body.categoryId) categoryDetail.categoryId = req.body.categoryId
+    // if (req.body.categoryName) categoryDetail.categoryName = req.body.categoryName;
+
+    // product.categoryDetail = categoryDetail;
 
     const images = product?.images;
 
@@ -437,11 +512,30 @@ const deleteMultipleProducts = async (req, res) => {
       message: "Products deleted successfully",
       deletedCount: products.length,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Failed to delete products",
+      error: error.message,
+    });
+  }
+};
+
+const getAllColors = async (req, res) => {
+  try {
+    const products = await Product.find({ status: "published" }, "color");
+    const allColors = products.flatMap((p) => p.color || []);
+    const uniqueColors = [...new Set(allColors)];
+
+    return res.status(200).json({
+      success: true,
+      colors: uniqueColors,
+    });
+  } catch (error) {
+    console.error("Error getting product colors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get product colors.",
       error: error.message,
     });
   }
@@ -452,5 +546,6 @@ module.exports = {
   getProductByID,
   updateProduct,
   deleteProduct,
-  deleteMultipleProducts
+  deleteMultipleProducts,
+  getAllColors
 };

@@ -4,6 +4,7 @@ const {
   deleteProduct,
   getProductByID,
   deleteMultipleProducts,
+  getAllColors
 } = require("../controller/productController");
 const {
   isAuthenticated,
@@ -18,8 +19,9 @@ const {
 const Product = require("../models/Product");
 const xlsx = require("xlsx");
 const paginate = require("../utilities/paginate");
-
+const { productFilter } = require("../utilities/helper");
 const router = require("express").Router();
+const { filterMiddleware } = require("../middleware/filter");
 
 router.post(
   "/create-product",
@@ -109,13 +111,26 @@ router.get(
     return res.json(res.paginationResult);
   }
 );
+// router.get(
+//   "/published-products",
+//   (req, res, next) => {
+//     req.filterQuery = productFilter(req.query);
+//     next();
+//   },
+//   // paginate(Product, { status: "published" }),
+//   async (req, res) => {
+//     return res.json(res.paginationResult);
+//   }
+// );
 router.get(
   "/published-products",
-  paginate(Product, { status: "published" }),
-  async (req, res) => {
-    return res.json(res.paginationResult);
+  filterMiddleware,                     // dynamic filters
+  paginate(Product, { status: "published" }), // static filters
+  (req, res) => {
+    res.json(res.paginationResult);
   }
 );
+
 router.get("/get-product-details/:id", getProductByID);
 router.patch(
   "/update-product/:id",
@@ -142,5 +157,6 @@ router.post(
   isAuthorized,
   deleteMultipleProducts
 );
+router.get("/colors", getAllColors);
 
 module.exports = router;
