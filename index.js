@@ -17,15 +17,21 @@ dotenv.config();
 const app = express();
 
 // middlewares
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
     credentials: true,
   })
 );
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+//     credentials: true,
+//   })
+// );
 
 app.use(express.json());
 app.get("/", (req, res) => res.send("API is Running"));
