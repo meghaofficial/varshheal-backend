@@ -34,6 +34,14 @@ app.use(cookieParser());
 // );
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+
 app.get("/", (req, res) => res.send("API is Running"));
 app.use("/api/auth", [
   authRoutes,
