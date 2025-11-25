@@ -19,19 +19,13 @@ const app = express();
 // middlewares
 app.use(
   cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    origin: ["http://localhost:5173", "https://varshheal.com", process.env.FRONTEND_URL],
     credentials: true,
   })
 );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
-    credentials: true,
-  })
-);
 
 app.use(express.json());
 app.get("/", (req, res) => res.send("API is Running"));
