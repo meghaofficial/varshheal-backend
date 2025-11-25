@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL, "https://www.varshheal.com"],
     credentials: true,
   })
 );
