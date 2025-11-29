@@ -16,54 +16,6 @@ const deleteCloudinaryImage = async (url, folder) => {
   }
 };
 
-// const productFilter = (params = {}) => {
-//   const {
-//     categoryId,
-//     priceMin,
-//     priceMax,
-//     ratingMin,
-//     ratingMax,
-//     color,
-//     search,
-//   } = params;
-
-//   let query = {};
-
-//   // ⭐ Category filter (your schema uses categoryDetail.categoryId)
-//   if (categoryId) {
-//     query["categoryDetail.categoryId"] = categoryId;
-//   }
-
-//   // ⭐ Price filter (supports min & max)
-//   if (priceMin || priceMax) {
-//     query.price = {};
-//     if (priceMin) query.price.$gte = Number(priceMin);
-//     if (priceMax) query.price.$lte = Number(priceMax);
-//   }
-
-//   // ⭐ Rating filter
-//   if (ratingMin || ratingMax) {
-//     query.rating = {};
-//     if (ratingMin) query.rating.$gte = Number(ratingMin);
-//     if (ratingMax) query.rating.$lte = Number(ratingMax);
-//   }
-
-//   // ⭐ Color filter (you store colors as array)
-//   if (color) {
-//     query.color = { $in: Array.isArray(color) ? color : [color] };
-//   }
-
-//   // ⭐ Search filter (name, id, or anything you want)
-//   if (search) {
-//     query.$or = [
-//       { name: { $regex: search, $options: "i" } },
-//       { sku: { $regex: search, $options: "i" } },
-//     ];
-//   }
-
-//   return query;
-// };
-
 const productFilter = (params = {}) => {
   const {
     categoryId,
@@ -117,8 +69,46 @@ const productFilter = (params = {}) => {
   return query;
 };
 
+const extractPublicId = (url) => {
+  if (!url) return null;
+
+  // Example:
+  // https://res.cloudinary.com/.../category/banner/dof7wlssikyu0wkbq0yp.jpg
+  // public_id = "category/banner/dof7wlssikyu0wkbq0yp"
+
+  const parts = url.split("/");
+  const filename = parts.pop(); // dof7wlssikyu0wkbq0yp.jpg
+  const publicId =
+    parts.slice(parts.indexOf("upload") + 1).join("/") +
+    "/" +
+    filename.split(".")[0];
+
+  return publicId;
+};
+
+const deleteFromCloudinary = async (publicId) => {
+  try {
+    if (!publicId) return;
+
+    const result = await cloudinary.uploader.destroy(publicId);
+
+    // Cloudinary returns result = { result: "not found" } if deleted manually
+    if (result.result === "not found") {
+      console.warn(`Cloudinary image already deleted: ${publicId}`);
+      return;
+    }
+
+    console.log("Cloudinary image deleted:", publicId);
+  } catch (err) {
+    // DO NOT BREAK execution
+    console.error("Cloudinary delete error:", err.message);
+  }
+};
+
 module.exports = {
   generateOTP,
   deleteCloudinaryImage,
   productFilter,
+  extractPublicId,
+  deleteFromCloudinary,
 };

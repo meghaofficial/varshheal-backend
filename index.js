@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+dotenv.config();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("./db");
@@ -12,8 +13,12 @@ const bodyParser = require("body-parser");
 const addressRoutes = require("./routes/address");
 const categoryRoutes = require("./routes/category");
 const productRoutes = require("./routes/product");
+const cartRoutes = require("./routes/cart");
 
-dotenv.config();
+// NEW ROUTES
+const newCategory = require("./routes/newCategory");
+
+
 const app = express();
 
 // middlewares
@@ -34,6 +39,8 @@ app.use("/api/auth", [
   addressRoutes,
   categoryRoutes,
   productRoutes,
+  cartRoutes,
+  newCategory
 ]);
 app.use("/api", protectedRoutes);
 
