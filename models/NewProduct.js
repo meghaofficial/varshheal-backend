@@ -25,7 +25,6 @@ const productSchema = new mongoose.Schema(
 
     variants: [
       {
-        _id: false,
         colorName: { type: String, required: true },
         colorCode: { type: String },
 

@@ -17,7 +17,7 @@ const cartRoutes = require("./routes/cart");
 
 // NEW ROUTES
 const newCategory = require("./routes/newCategory");
-
+const newProduct = require("./routes/newProduct");
 
 const app = express();
 
@@ -40,7 +40,9 @@ app.use("/api/auth", [
   categoryRoutes,
   productRoutes,
   cartRoutes,
-  newCategory
+  // neww
+  newCategory,
+  newProduct
 ]);
 app.use("/api", protectedRoutes);
 

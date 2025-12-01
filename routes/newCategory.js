@@ -17,7 +17,6 @@ const {
   isAuthenticated,
   isAuthorized,
 } = require("../middleware/authMiddleware");
-const uploadMultiple = require("../middleware/uploadMultiple");
 const uploadCategoryImages = require("../middleware/uploadCategoryImages");
 
 router.get("/categories/tree", getCategoryTree);

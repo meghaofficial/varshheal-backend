@@ -86,6 +86,38 @@ const extractPublicId = (url) => {
   return publicId;
 };
 
+const getPublicIdFromUrl = (url) => {
+  if (!url) return "";
+
+  try {
+    // Split by "/"
+    const parts = url.split("/");
+
+    // Last part is filename → with extension
+    const fileWithExt = parts.pop(); 
+
+    // Remove extension → n724jyep3args4k5hg9z
+    const fileName = fileWithExt.split(".")[0];
+
+    // Previous part may be folder → e.g. "product"
+    const folder = parts.pop();
+
+    // If folder starts with "v1234" (version), skip it
+    if (folder.startsWith("v")) {
+      // No folder, only filename
+      return fileName;
+    }
+
+    // Else include folder
+    return `${folder}/${fileName}`;
+
+  } catch (err) {
+    console.error("Failed to extract public_id:", err);
+    return "";
+  }
+};
+
+
 const deleteFromCloudinary = async (publicId) => {
   try {
     if (!publicId) return;
@@ -111,4 +143,5 @@ module.exports = {
   productFilter,
   extractPublicId,
   deleteFromCloudinary,
+  getPublicIdFromUrl
 };
